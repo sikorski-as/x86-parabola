@@ -1,7 +1,8 @@
 section .text
 global _parabola
+extern _shout
 
-_parabola: ;parabola(unsigned char * memoryBlock, int width, int height, float a, float p, float q, float range)
+_parabola: ; parabola(unsigned char * memoryBlock, int width, int height, float a, float p, float q, float range)
 	push ebp
 	mov ebp, esp
 	sub esp, 24
@@ -84,7 +85,7 @@ compute_value:
 	fmulp st1, st0
 	fadd DWORD q
 	fstp DWORD value
-	
+
 compute_y:	
 	sar DWORD height, 1
 	fld DWORD value
@@ -95,10 +96,6 @@ compute_y:
 	sal DWORD height, 1
 	
 check_if_y_in_range:	
-	
-	
-	; powyzej stare
-	
 	mov eax, DWORD height
 	neg eax
 	mov edx, eax
@@ -115,9 +112,6 @@ check_if_y_in_range:
 	sar eax, 1
 	cmp eax, DWORD y
 	jle increment
-	
-	
-	
 
 in_range:
 	cmp y, DWORD 0
@@ -173,8 +167,53 @@ increment:
 loop_after:
 	
 draw_scale:	
-	; TODO
+	
+	mov DWORD x, 0
+	mov eax, DWORD height
+	sar eax, 1
+	mov DWORD y, eax
+x_axis:
+	push BYTE -1
+	push BYTE 0xB7
+	push BYTE 0x7D
+	push BYTE 0x67
+	push DWORD height
+	push DWORD width
+	push DWORD y
+	push DWORD x
+	push DWORD pixels
+	call setPixel
+	add esp, DWORD 36
+		
+	inc DWORD x
+	mov eax, DWORD x
+	cmp eax, width
+	jl x_axis
 
+
+	mov DWORD y, 0
+	mov eax, DWORD width
+	sar eax, 1
+	mov DWORD x, eax
+y_axis:
+	push BYTE -1
+	push BYTE 0xB7
+	push BYTE 0x7D
+	push BYTE 0x67
+	push DWORD height
+	push DWORD width
+	push DWORD y
+	push DWORD x
+	push DWORD pixels
+	call setPixel
+	add esp, DWORD 36
+		
+	inc DWORD y
+	mov eax, DWORD y
+	cmp eax, height
+	jl y_axis
+
+end:
   leave
   ret
   
