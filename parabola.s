@@ -1,6 +1,7 @@
 section .text
 global _parabola
 extern _shout
+extern _shout2
 
 _parabola: ; parabola(unsigned char * memoryBlock, int width, int height, float a, float p, float q, float range)
 	push ebp
@@ -213,6 +214,158 @@ y_axis:
 	cmp eax, height
 	jl y_axis
 
+x_scale:
+	; wylicz ile kresek ma byc na osi
+	fld DWORD range
+	fld st0
+	faddp st1, st0
+	;fld1
+	;fsubp st1, st0
+	fistp DWORD where
+	
+	; wylicz delte - co ile pikseli ma byc kreska (float)
+	fild DWORD width
+	fild DWORD where
+	fdivp st1, st0
+	fstp DWORD delta
+	
+x_scale_loop:
+	; wylicz piksel w poziomie
+	fild DWORD where
+	fmul DWORD delta
+	fistp DWORD x
+	dec DWORD where
+	
+	mov eax, DWORD height
+	sar eax, 1
+	mov DWORD y, eax
+	add dword y, -20
+x_scale_loop_inner1:	
+	inc DWORD y
+	
+	push BYTE -1
+	push BYTE 0xB7
+	push BYTE 0x7D
+	push BYTE 0x67
+	push DWORD height
+	push DWORD width
+	push DWORD y
+	push DWORD x
+	push DWORD pixels
+	call setPixel
+	add esp, DWORD 36
+	
+	
+	mov eax, DWORD height
+	sar eax, 1
+	cmp DWORD y, eax
+	jl x_scale_loop_inner1
+	
+	
+	mov eax, DWORD height
+	sar eax, 1
+	mov DWORD y, eax
+	add DWORD y, 20
+x_scale_loop_inner2:	
+	dec DWORD y
+	
+	push BYTE -1
+	push BYTE 0xB7
+	push BYTE 0x7D
+	push BYTE 0x67
+	push DWORD height
+	push DWORD width
+	push DWORD y
+	push DWORD x
+	push DWORD pixels
+	call setPixel
+	add esp, DWORD 36
+	
+	mov eax, DWORD height
+	sar eax, 1
+	cmp DWORD y, eax
+	jg x_scale_loop_inner2	
+	
+	; koniec iteracji w zewnetrznej petli:
+	cmp DWORD where, 0
+	jg x_scale_loop
+
+y_scale:
+	; wylicz ile kresek ma byc na osi
+	fld DWORD range
+	fld st0
+	faddp st1, st0
+	;fld1
+	;fsubp st1, st0
+	fistp DWORD where
+	
+	; wylicz delte - co ile pikseli ma byc kreska (float)
+	fild DWORD height
+	fild DWORD where
+	fdivp st1, st0
+	fstp DWORD delta
+	
+y_scale_loop:
+	; wylicz piksel w poziomie
+	fild DWORD where
+	fmul DWORD delta
+	fistp DWORD y
+	dec DWORD where
+	
+	mov eax, DWORD width
+	sar eax, 1
+	mov DWORD x, eax
+	add dword x, -20
+y_scale_loop_inner1:	
+	inc DWORD x
+	
+	push BYTE -1
+	push BYTE 0xB7
+	push BYTE 0x7D
+	push BYTE 0x67
+	push DWORD height
+	push DWORD width
+	push DWORD y
+	push DWORD x
+	push DWORD pixels
+	call setPixel
+	add esp, DWORD 36
+	
+	
+	mov eax, DWORD width
+	sar eax, 1
+	cmp DWORD x, eax
+	jl y_scale_loop_inner1
+	
+	
+	mov eax, DWORD width
+	sar eax, 1
+	mov DWORD x, eax
+	add DWORD x, 20
+y_scale_loop_inner2:	
+	dec DWORD x
+	
+	push BYTE -1
+	push BYTE 0xB7
+	push BYTE 0x7D
+	push BYTE 0x67
+	push DWORD height
+	push DWORD width
+	push DWORD y
+	push DWORD x
+	push DWORD pixels
+	call setPixel
+	add esp, DWORD 36
+	
+	mov eax, DWORD width
+	sar eax, 1
+	cmp DWORD x, eax
+	jg y_scale_loop_inner2	
+	
+	; koniec iteracji w zewnetrznej petli:
+	cmp DWORD where, 0
+	jg y_scale_loop
+	
 end:
   leave
   ret
